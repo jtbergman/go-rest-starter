@@ -33,5 +33,9 @@ func Mux(app *app.App) http.Handler {
 	)
 
 	// All requests should recover panics and have a User
-	return middleware.RecoverPanic(middleware.User(mux))
+	return middleware.RecoverPanic(
+		middleware.Requests(
+			middleware.User(mux),
+		),
+	)
 }
