@@ -7,6 +7,7 @@ import (
 
 	"go-rest-starter.jtbergman.me/internal/assert"
 	"go-rest-starter.jtbergman.me/internal/mocks"
+	"go-rest-starter.jtbergman.me/internal/routes/auth"
 )
 
 func TestActivate(t *testing.T) {
@@ -18,7 +19,7 @@ func TestActivate(t *testing.T) {
 	assert.Check(t, registerUser(handler, `{"email": "test@example.com", "password": "password"}`))
 
 	// Invalid Token
-	assert.RunHandlerTestCase[failure](t, handler, "PUT", ActivateRoute, assert.HandlerTestCase[failure]{
+	assert.RunHandlerTestCase[failure](t, handler, "PUT", auth.ActivateRoute, assert.HandlerTestCase[failure]{
 		Name:   "Activate/Invalid",
 		Body:   `{"token": "token"}`,
 		Status: http.StatusNotFound,
@@ -28,7 +29,7 @@ func TestActivate(t *testing.T) {
 	token := mocks.Mailer(app).WelcomeActivationToken
 
 	// Success
-	assert.RunHandlerTestCase[user](t, handler, "PUT", ActivateRoute, assert.HandlerTestCase[user]{
+	assert.RunHandlerTestCase[user](t, handler, "PUT", auth.ActivateRoute, assert.HandlerTestCase[user]{
 		Name:   "Activate/Success",
 		Body:   fmt.Sprintf(`{"token": "%s"}`, token),
 		Status: http.StatusOK,

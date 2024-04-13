@@ -12,6 +12,7 @@ import (
 	"go-rest-starter.jtbergman.me/internal/assert"
 	"go-rest-starter.jtbergman.me/internal/mocks"
 	"go-rest-starter.jtbergman.me/internal/models/users"
+	"go-rest-starter.jtbergman.me/internal/routes/auth"
 	"go-rest-starter.jtbergman.me/internal/routes/middleware"
 )
 
@@ -30,7 +31,7 @@ func TestAuthE2E(t *testing.T) {
 	}
 
 	// Register
-	assert.RunHandlerTestCase(t, handler, "POST", RegisterRoute, assert.HandlerTestCase[user]{
+	assert.RunHandlerTestCase(t, handler, "POST", auth.RegisterRoute, assert.HandlerTestCase[user]{
 		Name:   "Register",
 		Body:   credentials,
 		Status: http.StatusCreated,
@@ -44,7 +45,7 @@ func TestAuthE2E(t *testing.T) {
 	})
 
 	// Activate
-	assert.RunHandlerTestCase(t, handler, "PUT", ActivateRoute, assert.HandlerTestCase[user]{
+	assert.RunHandlerTestCase(t, handler, "PUT", auth.ActivateRoute, assert.HandlerTestCase[user]{
 		Name:   "Activate",
 		Body:   fmt.Sprintf(`{"token": "%s"}`, mocks.Mailer(app).WelcomeActivationToken),
 		Status: http.StatusOK,
@@ -54,7 +55,7 @@ func TestAuthE2E(t *testing.T) {
 	})
 
 	// Login
-	assert.RunHandlerTestCase(t, handler, "POST", LoginRoute, assert.HandlerTestCase[token]{
+	assert.RunHandlerTestCase(t, handler, "POST", auth.LoginRoute, assert.HandlerTestCase[token]{
 		Name:   "Login/1",
 		Body:   credentials,
 		Status: http.StatusOK,
@@ -65,7 +66,7 @@ func TestAuthE2E(t *testing.T) {
 	})
 
 	// Logout
-	assert.RunHandlerTestCase(t, handler, "POST", LogoutRoute, assert.HandlerTestCase[struct{}]{
+	assert.RunHandlerTestCase(t, handler, "POST", auth.LogoutRoute, assert.HandlerTestCase[struct{}]{
 		Name:   "Logout",
 		Auth:   bearer,
 		Body:   ``,
@@ -74,7 +75,7 @@ func TestAuthE2E(t *testing.T) {
 	})
 
 	// Request Reset
-	assert.RunHandlerTestCase(t, handler, "POST", ResetRoute, assert.HandlerTestCase[message]{
+	assert.RunHandlerTestCase(t, handler, "POST", auth.ResetRoute, assert.HandlerTestCase[message]{
 		Name:   "Reset/Post",
 		Body:   `{"email": "test@example.com"}`,
 		Status: http.StatusAccepted,
@@ -87,7 +88,7 @@ func TestAuthE2E(t *testing.T) {
 	})
 
 	// Reset Password
-	assert.RunHandlerTestCase(t, handler, "PUT", ResetRoute, assert.HandlerTestCase[message]{
+	assert.RunHandlerTestCase(t, handler, "PUT", auth.ResetRoute, assert.HandlerTestCase[message]{
 		Name:   "Reset/Put",
 		Body:   fmt.Sprintf(`{"password": "pa55word", "token": "%s"}`, mocks.Mailer(app).PasswordResetToken),
 		Status: http.StatusOK,
@@ -98,7 +99,7 @@ func TestAuthE2E(t *testing.T) {
 
 	// Login
 	credentials = `{"email": "test@example.com", "password": "pa55word"}`
-	assert.RunHandlerTestCase(t, handler, "POST", LoginRoute, assert.HandlerTestCase[token]{
+	assert.RunHandlerTestCase(t, handler, "POST", auth.LoginRoute, assert.HandlerTestCase[token]{
 		Name:   "Login/2",
 		Body:   credentials,
 		Status: http.StatusOK,
@@ -109,7 +110,7 @@ func TestAuthE2E(t *testing.T) {
 	})
 
 	// Delete
-	assert.RunHandlerTestCase(t, handler, "POST", DeleteRoute, assert.HandlerTestCase[message]{
+	assert.RunHandlerTestCase(t, handler, "POST", auth.DeleteRoute, assert.HandlerTestCase[message]{
 		Name:   "Delete",
 		Auth:   bearer,
 		Body:   credentials,
@@ -130,7 +131,7 @@ func authHandler(app *app.App) http.HandlerFunc {
 		mux := http.NewServeMux()
 
 		middleware := middleware.New(app)
-		auth := New(app)
+		auth := auth.New(app)
 		auth.Route(mux, middleware)
 
 		return middleware.User(mux)
@@ -169,7 +170,7 @@ type failures struct {
 func activateUser(handler http.HandlerFunc, app *app.App) bool {
 	app.BG.Wait()
 	body := fmt.Sprintf(`{"token": "%s"}`, mocks.Mailer(app).WelcomeActivationToken)
-	return sendRequest(handler, "PUT", ActivateRoute, body) == http.StatusOK
+	return sendRequest(handler, "PUT", auth.ActivateRoute, body) == http.StatusOK
 }
 
 // Helper to login a user
@@ -177,13 +178,13 @@ func loginUser(handler http.HandlerFunc, credentials string) string {
 	var result struct {
 		Token string `json:"token"`
 	}
-	sendRequestGetResult(handler, "POST", LoginRoute, credentials, &result)
+	sendRequestGetResult(handler, "POST", auth.LoginRoute, credentials, &result)
 	return result.Token
 }
 
 // Helper to create a user
 func registerUser(handler http.HandlerFunc, credentials string) bool {
-	statusCode := sendRequest(handler, "POST", RegisterRoute, credentials)
+	statusCode := sendRequest(handler, "POST", auth.RegisterRoute, credentials)
 	return statusCode == http.StatusCreated
 }
 

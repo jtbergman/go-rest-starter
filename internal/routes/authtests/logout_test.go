@@ -6,6 +6,7 @@ import (
 
 	"go-rest-starter.jtbergman.me/internal/assert"
 	"go-rest-starter.jtbergman.me/internal/mocks"
+	"go-rest-starter.jtbergman.me/internal/routes/auth"
 )
 
 func TestLogout(t *testing.T) {
@@ -16,7 +17,7 @@ func TestLogout(t *testing.T) {
 	credentials := `{"email": "test@example.com", "password": "password"}`
 
 	// Require Authed User
-	assert.RunHandlerTestCase(t, handler, "POST", LogoutRoute, assert.HandlerTestCase[failure]{
+	assert.RunHandlerTestCase(t, handler, "POST", auth.LogoutRoute, assert.HandlerTestCase[failure]{
 		Name:   "Delete/AuthRequire",
 		Body:   ``,
 		Status: http.StatusUnauthorized,
@@ -29,7 +30,7 @@ func TestLogout(t *testing.T) {
 	assert.Check(t, len(token) > 0)
 
 	// Success
-	assert.RunHandlerTestCase(t, handler, "POST", LogoutRoute, assert.HandlerTestCase[struct{}]{
+	assert.RunHandlerTestCase(t, handler, "POST", auth.LogoutRoute, assert.HandlerTestCase[struct{}]{
 		Name:   "Delete/Success",
 		Auth:   token,
 		Body:   ``,

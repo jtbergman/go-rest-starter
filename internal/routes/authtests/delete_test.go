@@ -6,6 +6,7 @@ import (
 
 	"go-rest-starter.jtbergman.me/internal/assert"
 	"go-rest-starter.jtbergman.me/internal/mocks"
+	"go-rest-starter.jtbergman.me/internal/routes/auth"
 )
 
 func TestDelete(t *testing.T) {
@@ -21,14 +22,14 @@ func TestDelete(t *testing.T) {
 	assert.Check(t, len(token) > 0)
 
 	// Auth Required
-	assert.RunHandlerTestCase[failures](t, handler, "POST", DeleteRoute, assert.HandlerTestCase[failures]{
+	assert.RunHandlerTestCase[failures](t, handler, "POST", auth.DeleteRoute, assert.HandlerTestCase[failures]{
 		Name:   "Delete/AuthRequired",
 		Body:   credentials,
 		Status: http.StatusUnauthorized,
 	})
 
 	// User Not Found
-	assert.RunHandlerTestCase[failures](t, handler, "POST", DeleteRoute, assert.HandlerTestCase[failures]{
+	assert.RunHandlerTestCase[failures](t, handler, "POST", auth.DeleteRoute, assert.HandlerTestCase[failures]{
 		Name:   "Delete/UserNotFound",
 		Body:   `{"email": "test2@example.com", "password": "password"}`,
 		Auth:   token,
@@ -36,7 +37,7 @@ func TestDelete(t *testing.T) {
 	})
 
 	// Credentials Invalid
-	assert.RunHandlerTestCase[failures](t, handler, "POST", DeleteRoute, assert.HandlerTestCase[failures]{
+	assert.RunHandlerTestCase[failures](t, handler, "POST", auth.DeleteRoute, assert.HandlerTestCase[failures]{
 		Name:   "Delete/CredentialsInvalid",
 		Body:   `{"email": "test@example.com", "password": "pa55word"}`,
 		Auth:   token,
@@ -44,7 +45,7 @@ func TestDelete(t *testing.T) {
 	})
 
 	// Success
-	assert.RunHandlerTestCase[message](t, handler, "POST", DeleteRoute, assert.HandlerTestCase[message]{
+	assert.RunHandlerTestCase[message](t, handler, "POST", auth.DeleteRoute, assert.HandlerTestCase[message]{
 		Name:   "Delete/CredentialsInvalid",
 		Body:   credentials,
 		Auth:   token,

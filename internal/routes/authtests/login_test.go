@@ -6,6 +6,7 @@ import (
 
 	"go-rest-starter.jtbergman.me/internal/assert"
 	"go-rest-starter.jtbergman.me/internal/mocks"
+	"go-rest-starter.jtbergman.me/internal/routes/auth"
 )
 
 // Tests error cases for login
@@ -39,7 +40,7 @@ func TestLoginValidation(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		assert.RunHandlerTestCase(t, handler, "POST", LoginRoute, tc)
+		assert.RunHandlerTestCase(t, handler, "POST", auth.LoginRoute, tc)
 	}
 }
 
@@ -56,7 +57,7 @@ func TestLoginUnauthorized(t *testing.T) {
 	credentials := `{"email": "test@example.com", "password": "password"}`
 
 	// User does not exist
-	assert.RunHandlerTestCase(t, handler, "POST", LoginRoute, assert.HandlerTestCase[failure]{
+	assert.RunHandlerTestCase(t, handler, "POST", auth.LoginRoute, assert.HandlerTestCase[failure]{
 		Name:   "User/DoesNotExist",
 		Body:   credentials,
 		Status: http.StatusUnauthorized,
@@ -66,7 +67,7 @@ func TestLoginUnauthorized(t *testing.T) {
 	assert.Check(t, registerUser(handler, credentials))
 
 	// Password does not match
-	assert.RunHandlerTestCase(t, handler, "POST", LoginRoute, assert.HandlerTestCase[failure]{
+	assert.RunHandlerTestCase(t, handler, "POST", auth.LoginRoute, assert.HandlerTestCase[failure]{
 		Name:   "User/WrongPassword",
 		Body:   `{"email": "test@example.com", "password": "pa55word"}`,
 		Status: http.StatusUnauthorized,
@@ -76,7 +77,7 @@ func TestLoginUnauthorized(t *testing.T) {
 	})
 
 	// User needs activation
-	assert.RunHandlerTestCase(t, handler, "POST", LoginRoute, assert.HandlerTestCase[failure]{
+	assert.RunHandlerTestCase(t, handler, "POST", auth.LoginRoute, assert.HandlerTestCase[failure]{
 		Name:   "User/NeedsActivation",
 		Body:   credentials,
 		Status: http.StatusUnauthorized,
@@ -89,7 +90,7 @@ func TestLoginUnauthorized(t *testing.T) {
 	assert.Check(t, activateUser(handler, app))
 
 	// Success
-	assert.RunHandlerTestCase(t, handler, "POST", LoginRoute, assert.HandlerTestCase[success]{
+	assert.RunHandlerTestCase(t, handler, "POST", auth.LoginRoute, assert.HandlerTestCase[success]{
 		Name:   "Login/Success",
 		Body:   credentials,
 		Status: http.StatusOK,

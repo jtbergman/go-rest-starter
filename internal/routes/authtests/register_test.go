@@ -1,14 +1,13 @@
 package auth
 
 import (
-	"bytes"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"go-rest-starter.jtbergman.me/internal/assert"
 	"go-rest-starter.jtbergman.me/internal/mocks"
 	"go-rest-starter.jtbergman.me/internal/models/users"
+	"go-rest-starter.jtbergman.me/internal/routes/auth"
 )
 
 const registerSuccessBody = `{"email": "test@example.com", "password": "password"}`
@@ -16,9 +15,8 @@ const registerSuccessBody = `{"email": "test@example.com", "password": "password
 // Test register success
 func TestRegister(t *testing.T) {
 	assert.Integration(t)
-
 	app := mocks.App(t)
-	handler := http.HandlerFunc(New(app).Register)
+	handler := authHandler(app)
 
 	type success struct {
 		User users.User `json:"user"`
@@ -39,7 +37,7 @@ func TestRegister(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		assert.RunHandlerTestCase(t, handler, "POST", RegisterRoute, tc)
+		assert.RunHandlerTestCase(t, handler, "POST", auth.RegisterRoute, tc)
 	}
 
 	t.Run("Success/WelcomeEmail", func(t *testing.T) {
@@ -51,7 +49,7 @@ func TestRegister(t *testing.T) {
 func TestRegisterValidation(t *testing.T) {
 	assert.Integration(t)
 	app := mocks.App(t)
-	handler := http.HandlerFunc(New(app).Register)
+	handler := authHandler(app)
 
 	tests := []assert.HandlerTestCase[failures]{
 		{
@@ -67,7 +65,7 @@ func TestRegisterValidation(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.Name, func(t *testing.T) {
-			assert.RunHandlerTestCase(t, handler, "POST", RegisterRoute, tc)
+			assert.RunHandlerTestCase(t, handler, "POST", auth.RegisterRoute, tc)
 		})
 	}
 }
@@ -76,18 +74,10 @@ func TestRegisterValidation(t *testing.T) {
 func TestRegisterFailure(t *testing.T) {
 	assert.Integration(t)
 	app := mocks.App(t)
-	handler := http.HandlerFunc(New(app).Register)
+	handler := authHandler(app)
 
-	t.Run("Seed", func(t *testing.T) {
-		req := httptest.NewRequest("POST", RegisterRoute, bytes.NewBufferString(registerSuccessBody))
-		rr := httptest.NewRecorder()
-		handler.ServeHTTP(rr, req)
-
-		resp := rr.Result()
-		defer resp.Body.Close()
-
-		assert.Equal(t, resp.StatusCode, http.StatusCreated)
-	})
+	// Seed - create user
+	assert.Check(t, registerUser(handler, registerSuccessBody))
 
 	tests := []assert.HandlerTestCase[failure]{
 		{
@@ -109,6 +99,6 @@ func TestRegisterFailure(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		assert.RunHandlerTestCase(t, handler, "POST", RegisterRoute, tc)
+		assert.RunHandlerTestCase(t, handler, "POST", auth.RegisterRoute, tc)
 	}
 }
