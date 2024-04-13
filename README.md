@@ -31,8 +31,6 @@ PORT=4000
 #
 # PROJECT_NAME is the group name used by Docker
 PROJECT_NAME="go-rest-starter"
-CONTAINER_NAME="postgres"
-TEST_CONTAINER_NAME="postgres-tests"
 
 # Postgres
 #

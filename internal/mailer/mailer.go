@@ -73,6 +73,7 @@ func New(cfg config.Config, logger xlogger.Logger) Mailer {
 func (m Mail) SendWelcomeEmail(recipient string, data map[string]string) *xerrors.AppError {
 	if m.skip {
 		m.logger.Info("Welcome Email", "token", data["activateToken"])
+		return nil
 	}
 	return m.send(recipient, welcomeTemplate, data)
 }
@@ -81,6 +82,7 @@ func (m Mail) SendWelcomeEmail(recipient string, data map[string]string) *xerror
 func (m Mail) SendPasswordResetEmail(recipient string, data map[string]string) *xerrors.AppError {
 	if m.skip {
 		m.logger.Info("Password Reset", "token", data["passwordResetToken"])
+		return nil
 	}
 	return m.send(recipient, passwordResetTemplate, data)
 }

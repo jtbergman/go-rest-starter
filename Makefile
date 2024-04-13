@@ -6,6 +6,9 @@ DSN="postgres://${DB_USER}:${DB_PASSWORD}@localhost/${DB_NAME}?sslmode=disable"
 # Create Tests DSN
 TEST_DSN="postgres://${TEST_DB_USER}:${TEST_DB_PASSWORD}@localhost:5433/${TEST_DB_NAME}?sslmode=disable"
 
+# Create Tests DSN for Docker
+TEST_DSN_DOCKER="postgres://${TEST_DB_USER}:${TEST_DB_PASSWORD}@localhost/${TEST_DB_NAME}?sslmode=disable"
+
 # ================================================================================ #
 # HELPERS
 # ================================================================================ #
@@ -24,6 +27,7 @@ help:
 ## run: run API
 .PHONY: run
 run: db/start mig/up
+	@echo "Starting server..."
 	@go run ./cmd/api \
 		-env=${ENV} \
 		-port=${PORT} \
@@ -63,29 +67,34 @@ tests/cover: db/start/tests
 .PHONY: db/start
 db/start: db/stop/tests
 	@echo "Starting API database..."
-	@docker-compose -p ${PROJECT_NAME} up -d ${CONTAINER_NAME}
-	@echo "Waiting for Postgres to accept connections..."
-	@sleep 1
+	@docker-compose -p ${PROJECT_NAME} up -d postgres
+	@while ! docker exec postgres pg_isready -h postgres -p 5432; do \
+		echo "Waiting for PostgreSQL to start..."; \
+		sleep 1; \
+	done
 
 ## db/start/tests: start the Tests database
 .PHONY: db/start/tests
 db/start/tests: db/stop
 	@echo "Starting Tests database..."
-	@docker-compose -p ${PROJECT_NAME} up -d ${TEST_CONTAINER_NAME}
+	@docker-compose -p ${PROJECT_NAME} up -d postgres-tests
+	@while ! docker exec postgres-tests pg_isready -h postgres-tests -p 5432; do \
+		echo "Waiting for PostgreSQL to start..."; \
+		sleep 1; \
+	done
 	@sleep 1
-	@echo "Waiting for Postgres to accept connections..."
 
 ## db/stop: stop the API database
 .PHONY: db/stop
 db/stop:
 	@echo "Stopping API database..."
-	@docker-compose -p ${PROJECT_NAME} stop ${CONTAINER_NAME}
+	@docker-compose -p ${PROJECT_NAME} stop postgres
 
 ## db/stop/tests: stop the Tests database
 .PHONY: db/stop/tests
 db/stop/tests:
 	@echo "Stopping Tests database..."
-	@docker-compose -p ${PROJECT_NAME} stop ${TEST_CONTAINER_NAME}
+	@docker-compose -p ${PROJECT_NAME} stop postgres-tests
 
 
 # ================================================================================ #
@@ -97,14 +106,14 @@ db/stop/tests:
 sql: db/start
 	@echo "Connecting to database..."
 	@echo "Connected. Type 'exit' to exit."
-	@docker exec -it ${CONTAINER_NAME} psql ${DSN}
+	@docker exec -it postgres psql ${DSN}
 
 ## sql/tests: connect to the Tests database with psql
 .PHONY: sql/tests
 sql/tests: db/start/tests
 	@echo "Connecting to database..."
 	@echo "Connected. Type 'exit' to exit."
-	@docker exec -it ${TEST_CONTAINER_NAME} psql ${TEST_DSN}
+	@docker exec -it postgres-tests psql ${TEST_DSN_DOCKER}
 
 
 # ================================================================================ #

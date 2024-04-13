@@ -4,7 +4,7 @@ services:
   postgres:
     image: postgres
     restart: always
-    container_name: ${CONTAINER_NAME}
+    container_name: postgres
     environment:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
@@ -18,7 +18,7 @@ services:
   postgres-tests:
     image: postgres
     restart: always
-    container_name: ${TEST_CONTAINER_NAME}
+    container_name: postgres-tests
     environment:
       - POSTGRES_DB=${TEST_DB_NAME}
       - POSTGRES_USER=${TEST_DB_USER}
