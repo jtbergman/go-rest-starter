@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reset Password</title>
+</head>
+<body>
+    <h1>Reset Your Password</h1>
+    <form id="resetForm">
+        <input type="password" id="newPassword" placeholder="New Password" required>
+        <input type="submit" value="Reset Password">
+    </form>
+    <script>
+        document.getElementById('resetForm').onsubmit = function(event) {
+            event.preventDefault(); // Prevent the form from submitting the traditional way
+            const token = new URLSearchParams(window.location.search).get('token');
+            const newPassword = document.getElementById('newPassword').value;
+
+            fetch('/v1/auth/reset', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ token: token, password: newPassword }),
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Password reset successfully. Please try to log in.');
+                } else {
+                    alert('Failed to reset password. Please try the link again or contact support.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        };
+    </script>
+</body>
+</html>

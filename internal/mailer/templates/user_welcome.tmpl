@@ -1,0 +1,39 @@
+{{define "subject"}}Welcome!{{end}}
+
+{{define "plainBody"}}
+Hi,
+
+Thank you for signing up. We're excited to have you on board!
+
+Please click this link to activate your account:
+http://localhost:4000/v1/auth/activate?act={{.activateToken}}
+
+Thanks,
+
+The Team
+{{end}}
+
+{{define "htmlBody"}}
+<!doctype html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+
+<body>
+    <p>Hi,</p>
+    <p>Thank you for signing up. We're excited to have you on board!</p>
+    <p>Please click this link to activate your account:</p>
+    <p>
+        <a href="http://localhost:4000/v1/auth/activate?act={{.activateToken}}">
+            http://localhost:4000/v1/auth/activate?act={{.activateToken}}
+        </a>
+    </p>
+    <p>Thanks,</p>
+    <p>The Team</p>
+</body>
+
+</html>
+{{end}}

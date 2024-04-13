@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Activate Account</title>
+    <script>
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        function activateAccount() {
+            const token = getQueryParam('act');
+            if (!token) {
+                alert('Token is required for activation.');
+                return;
+            }
+
+            fetch('/v1/auth/activate', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ token: token }),
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Account activated successfully.');
+                } else {
+                    alert('Failed to activate account.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred during account activation.');
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Activate Your Account</h1>
+    <button onclick="activateAccount()">Activate</button>
+</body>
+</html>
